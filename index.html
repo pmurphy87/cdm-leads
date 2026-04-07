@@ -130,6 +130,11 @@
 let running = false;
 
 function checkKeys() {
+  // Save keys to localStorage whenever they change
+  const ck = document.getElementById("claude-key").value.trim();
+  const rk = document.getElementById("rapid-key").value.trim();
+  if (ck.length > 20) localStorage.setItem("cdm_claude_key", ck);
+  if (rk.length > 20) localStorage.setItem("cdm_rapid_key", rk);
   const ck = document.getElementById('claude-key').value.trim();
   const rk = document.getElementById('rapid-key').value.trim();
   const cs = document.getElementById('claude-status');
@@ -141,6 +146,15 @@ function checkKeys() {
   rs.textContent = rkOk ? '✓ Key set' : 'Not set';
   rs.className = rkOk ? 'key-status ok' : 'key-status no';
 }
+
+// Load saved keys on startup
+window.onload = function() {
+  const ck = localStorage.getItem("cdm_claude_key");
+  const rk = localStorage.getItem("cdm_rapid_key");
+  if (ck) { document.getElementById("claude-key").value = ck; }
+  if (rk) { document.getElementById("rapid-key").value = rk; }
+  checkKeys();
+};
 
 function setStep(n, state, txt) {
   document.getElementById('p'+n).className = 'pipe-step ' + state;
@@ -504,4 +518,3 @@ function emailReport() {
   const to = encodeURIComponent('chip@cdmtechnology.com,devlin@cdmtechnology.com');
   window.open('mailto:' + to + '?subject=' + subject + '&body=' + body);
 }
-</script>
