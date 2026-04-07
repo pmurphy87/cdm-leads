@@ -82,8 +82,12 @@
         Anthropic API Key
         <a href="https://console.anthropic.com" target="_blank">Get key →</a>
       </div>
-      <input type="password" class="key-input" id="claude-key" placeholder="sk-ant-api03-..." oninput="checkKeys()" autocomplete="on" name="anthropic-api-key">
-      <div class="key-status no" id="claude-status">Not set</div>
+      <input type="text" class="key-input" id="claude-key" placeholder="Paste your full Anthropic key here then click Save" autocomplete="off">
+      <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
+        <button id="key-save-btn" onclick="saveClaudeKey()" style="background:#c8f04a;color:#0d0d0f;border:none;border-radius:5px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;">Save Key</button>
+        <span id="key-saved-msg" style="display:none;font-size:12px;color:#3dd9b3;">✓ Key saved — you won't need to do this again</span>
+        <span id="claude-status" class="key-status no"></span>
+      </div>
     </div>
     <div class="key-block">
       <div class="key-label">
@@ -148,24 +152,27 @@ function checkKeys() {
 }
 
 // Load saved keys on startup
+function saveClaudeKey() {
+  const key = document.getElementById("claude-key").value.trim();
+  if (key.length < 20) { alert("That key looks too short — please paste your full Anthropic API key."); return; }
+  localStorage.setItem("cdm_claude_key", key);
+  document.getElementById("key-save-btn").style.display = "none";
+  document.getElementById("key-saved-msg").style.display = "inline";
+  document.getElementById("claude-key").type = "password";
+}
+
 window.onload = function() {
-  // Always pre-fill RapidAPI key
   document.getElementById("rapid-key").value = "75f831979dmshabb4296be2a23eep1f1951jsn4462aa6c60ac";
-  // Load saved Anthropic key
   const ck = localStorage.getItem("cdm_claude_key");
   if (ck && ck.length > 20) {
     document.getElementById("claude-key").value = ck;
-  } else {
-    // Prompt user for key if not saved
-    setTimeout(function() {
-      const key = prompt("Welcome to CDM Intelligence Agent!\n\nPaste your Anthropic API key to get started:\n(You only need to do this once — it will be saved automatically)");
-      if (key && key.length > 20) {
-        document.getElementById("claude-key").value = key;
-        localStorage.setItem("cdm_claude_key", key);
-      }
-    }, 500);
+    document.getElementById("claude-status").textContent = "✓ Key saved";
+    document.getElementById("claude-status").className = "key-status ok";
+    document.getElementById("key-save-btn").style.display = "none";
+    document.getElementById("key-saved-msg").style.display = "block";
   }
-  checkKeys();
+  document.getElementById("rapid-status").textContent = "✓ Key set";
+  document.getElementById("rapid-status").className = "key-status ok";
 };
 
 function setStep(n, state, txt) {
@@ -187,7 +194,7 @@ function clearLog() {
 }
 
 async function searchJobs(query) {
-  const key = document.getElementById('rapid-key').value.trim() || localStorage.getItem("cdm_rapid_key") || "75f831979dmshabb4296be2a23eep1f1951jsn4462aa6c60ac";
+  const key = "75f831979dmshabb4296be2a23eep1f1951jsn4462aa6c60ac";
   const url = 'https://jsearch.p.rapidapi.com/search?query=' + encodeURIComponent(query) + '&page=1&num_pages=1&date_posted=month&country=us';
   const r = await fetch(url, {
     method: 'GET',
@@ -288,8 +295,8 @@ function extractCompanies(jobs) {
 
 async function runAgents() {
   if (running) return;
-  const ck = document.getElementById('claude-key').value.trim();
-  const rk = document.getElementById('rapid-key').value.trim();
+  const ck = document.getElementById('claude-key').value.trim() || localStorage.getItem('cdm_claude_key') || '';
+  const rk = "75f831979dmshabb4296be2a23eep1f1951jsn4462aa6c60ac";
   // validation removed
   // validation removed
 
