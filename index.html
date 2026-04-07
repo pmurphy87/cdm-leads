@@ -114,7 +114,7 @@
   <div class="report-area">
     <div class="report-toolbar">
       <div class="report-meta" id="report-meta">No report generated yet</div>
-      <button class="copy-btn" onclick="copyReport()">Copy report</button>
+      <button class="copy-btn" onclick="copyReport()">Copy report</button><button class="copy-btn" onclick="emailReport()" style="margin-left:8px;background:#1a2a1a;border-color:rgba(200,240,74,0.3);color:#c8f04a;">Email to Chip &amp; Devlin</button>
     </div>
     <div class="report-body" id="report-body">
       <div class="empty">
@@ -450,39 +450,4 @@ Return ONLY the HTML fragment. No markdown. No preamble. No html/body tags.`;
     setStep(4, 'done', 'Complete ✓');
     log('Report complete! ' + hot.length + ' hot leads, ' + warm.length + ' warm leads from live job data.', 'ok');
 
-    const ts = new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
-    document.getElementById('report-meta').textContent = 'Generated ' + ts + ' · LIVE DATA · ' + hot.length + ' hot · ' + warm.length + ' warm';
-    document.getElementById('report-body').innerHTML = raw4;
-
-  } catch(e) {
-    log('ERROR: ' + e.message, 'err');
-    [1,2,3,4].forEach(n => {
-      if (document.getElementById('p'+n).className.includes('active')) setStep(n, 'err', 'Error');
-    });
-  } finally {
-    running = false;
-    document.getElementById('btn-run').disabled = false;
-    document.getElementById('btn-text').textContent = 'Run Agents';
-  }
-}
-
-function copyReport() {
-  const text = document.getElementById('report-body').innerText;
-  navigator.clipboard.writeText(text).then(() => {
-    const b = document.querySelector('.copy-btn');
-    const orig = b.textContent;
-    b.textContent = 'Copied!';
-    b.style.color = '#3dd9b3';
-    setTimeout(() => { b.textContent = orig; b.style.color = ''; }, 2000);
-  }).catch(() => {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-  });
-}
-</script>
-</body>
-</html>
+    const ts = new Date().toLocaleSt
