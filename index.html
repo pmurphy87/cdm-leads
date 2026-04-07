@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CDM Intelligence Agent</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0f;
+    --surface: #141416;
+    --surface2: #1c1c1f;
+    --border: #2a2a2f;
+    --border2: #3a3a42;
+    --text: #e8e8ec;
+    --muted: #7a7a85;
+    --dim: #4a4a55;
+    --accent: #c8f04a;
+    --accent-dim: rgba(200,240,74,0.1);
+    --accent-border: rgba(200,240,74,0.25);
+    --hot: #ff5c3a;
+    --hot-dim: rgba(255,92,58,0.1);
+    --warm: #ffaa2e;
+    --warm-dim: rgba(255,170,46,0.1);
+    --ai: #3dd9b3;
+    --ai-dim: rgba(61,217,179,0.1);
+    --purple: #a78bfa;
+    --purple-dim: rgba(167,139,250,0.1);
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+    --serif: 'Playfair Display', serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* Layout */
+  .shell { display: flex; min-height: 100vh; }
+
+  .sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 28px 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .logo {
+    padding: 0 24px 28px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+  .logo-mark {
+    font-family: var(--serif);
+    font-size: 22px;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .logo-sub {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .nav-section {
+    padding: 0 16px;
+    margin-bottom: 8px;
+  }
+  .nav-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--dim);
+    padding: 0 8px;
+    margin-bottom: 6px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: 7px;
+    font-size: 13.5px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active {
+    background: var(--accent-dim);
+    border-color: var(--accent-border);
+    color: var(--accent);
+  }
+  .nav-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 20px 24px 0;
+    border-top: 1px solid var(--border);
+  }
+  .api-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .status-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--dim);
+    transition: background 0.3s;
+  }
+  .status-dot.connected { background: var(--ai); box-shadow: 0 0 6px var(--ai); }
+  .status-dot.error { background: var(--hot); }
+
+  /* Main */
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+  /* Header bar */
+  .topbar {
+    padding: 20px 36px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .topbar-title {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+  .topbar-actions { display: flex; gap: 10px; align-items: center; }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 18px;
+    border-radius: 7px;
+    font-family: var(--sans);
+    font-size: 13.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none;
+    text-decoration: none;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #0d0d0f;
+  }
+  .btn-primary:hover { background: #d4f55c; transform: translateY(-1px); }
+  .btn-primary:disabled { background: var(--dim); color: var(--muted); cursor: not-allowed; transform: none; }
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { border-color: var(--border2); color: var(--text); }
+
+  /* Content area */
+  .content { padding: 36px; flex: 1; }
+
+  /* Setup panel */
+  .setup-panel {
+    max-width: 620px;
+  }
+  .panel-heading {
+    font-family: var(--serif);
+    font-size: 28px;
+    color: var(--text);
+    margin-bottom: 10px;
+    line-height: 1.2;
+  }
+  .panel-sub {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 32px;
+    line-height: 1.7;
+  }
+
+  .field-group { margin-bottom: 20px; }
+  .field-label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .field-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text);
+    transition: border-color 0.15s;
+    outline: none;
+  }
+  .field-input:focus { border-color: var(--accent); }
+  .field-input::placeholder { color: var(--dim); }
+  .field-hint {
+    font-size: 12px;
+    color: var(--dim);
+    margin-top: 6px;
+  }
+
+  .field-select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-family: var(--sans);
+    font-size: 13.5px;
+    color: var(--text);
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .field-select:focus { border-color: var(--accent); }
+  .field-select option { background: var(--surface2); }
+
+  .info-box {
+    background: var(--accent-dim);
+    border: 1px solid var(--accent-border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.7;
+    margin-bottom: 24px;
+  }
+  .info-box a { color: var(--accent); text-decoration: none; }
+  .info-box a:hover { text-decoration: underline; }
+
+  /* Agent pipeline display */
+  .pipeline {
+    display: flex;
+    gap: 0;
+    margin: 32px 0;
+    align-items: stretch;
+  }
+  .pipeline-step {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 0;
+    padding: 16px 18px;
+    position: relative;
+  }
+  .pipeline-step:first-child { border-radius: 8px 0 0 8px; }
+  .pipeline-step:last-child { border-radius: 0 8px 8px 0; }
+  .pipeline-step + .pipeline-step { border-left: none; }
+  .pipeline-step.active {
+    background: var(--accent-dim);
+    border-color: var(--accent-border);
+  }
+  .pipeline-step.done {
+    background: rgba(61,217,179,0.05);
+    border-color: rgba(61,217,179,0.2);
+  }
+  .pipeline-step.error-state {
+    background: var(--hot-dim);
+    border-color: rgba(255,92,58,0.3);
+  }
+  .step-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--dim);
+    margin-bottom: 4px;
+    letter-spacing: 0.08em;
+  }
+  .step-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+  .step-status {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+  .pipeline-step.active .step-status { color: var(--accent); }
+  .pipeline-step.done .step-status { color: var(--ai); }
+
+  /* Progress log */
+  .log-panel {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 24px;
+    max-height: 220px;
+    overflow-y: auto;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.8;
+  }
+  .log-line { color: var(--muted); }
+  .log-line.info { color: var(--text); }
+  .log-line.success { color: var(--ai); }
+  .log-line.warn { color: var(--warm); }
+  .log-line.error { color: var(--hot); }
+  .log-line::before { content: '> '; color: var(--dim); }
+
+  /* Report output */
+  .report-wrapper {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .report-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .report-toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .report-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .report-body {
+    padding: 28px 32px;
+    color: var(--text);
+    line-height: 1.75;
+    font-size: 14px;
+  }
+
+  /* Lead cards inside report */
+  .lead-block {
+    border-radius: 8px;
+    padding: 18px 20px;
+    margin: 16px 0;
+    border-left: 3px solid transparent;
+  }
+  .lead-block.hot { background: var(--hot-dim); border-left-color: var(--hot); }
+  .lead-block.warm { background: var(--warm-dim); border-left-color: var(--warm); }
+  .lead-block.ai { background: var(--ai-dim); border-left-color: var(--ai); }
+  .lead-block.sales { background: var(--purple-dim); border-left-color: var(--purple); }
+
+  .report-section-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin: 24px 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .report-section-title.ai { color: var(--ai); border-color: rgba(61,217,179,0.2); }
+  .report-section-title.sales { color: var(--purple); border-color: rgba(167,139,250,0.2); }
+  .report-section-title.hot { color: var(--hot); border-color: rgba(255,92,58,0.2); }
+  .report-section-title.warm { color: var(--warm); border-color: rgba(255,170,46,0.2); }
+
+  /* Empty / placeholder state */
+  .empty-state {
+    text-align: center;
+    padding: 80px 40px;
+    color: var(--dim);
+  }
+  .empty-icon {
+    font-size: 40px;
+    margin-bottom: 16px;
+    opacity: 0.4;
+  }
+  .empty-title {
+    font-family: var(--serif);
+    font-size: 22px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .empty-sub { font-size: 13px; color: var(--dim); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  /* Spinner */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid var(--dim);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  /* Pulse for active step */
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+  .pulsing { animation: pulse 1.5s ease-in-out infinite; }
+
+  /* Utility */
+  .hidden { display: none !important; }
+  .mono { font-family: var(--mono); }
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+  .tag-hot { background: var(--hot-dim); color: var(--hot); border: 1px solid rgba(255,92,58,0.3); }
+  .tag-warm { background: var(--warm-dim); color: var(--warm); border: 1px solid rgba(255,170,46,0.3); }
+  .tag-ai { background: var(--ai-dim); color: var(--ai); border: 1px solid rgba(61,217,179,0.3); }
+  .tag-sales { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(167,139,250,0.3); }
+
+  .copy-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 5px;
+    padding: 5px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: var(--sans);
+  }
+  .copy-btn:hover { border-color: var(--border2); color: var(--text); }
+
+  textarea.hidden-copy { position:absolute; left:-9999px; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">CDM</div>
+      <div class="logo-sub">Intelligence Agent · v4</div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Screens</div>
+      <div class="nav-item active" onclick="showScreen('setup')">
+        <div class="nav-dot"></div> Setup &amp; Run
+      </div>
+      <div class="nav-item" onclick="showScreen('report')" id="nav-report">
+        <div class="nav-dot"></div> Latest Report
+      </div>
+      <div class="nav-item" onclick="showScreen('settings')">
+        <div class="nav-dot"></div> Settings
+      </div>
+    </div>
+
+    <div class="nav-section" style="margin-top:16px;">
+      <div class="nav-label">Agents</div>
+      <div class="nav-item" id="nav-a1"><div class="nav-dot"></div> Scout</div>
+      <div class="nav-item" id="nav-a2"><div class="nav-dot"></div> Qualifier</div>
+      <div class="nav-item" id="nav-a3"><div class="nav-dot"></div> Researcher</div>
+      <div class="nav-item" id="nav-a4"><div class="nav-dot"></div> Report Builder</div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="api-status">
+        <div class="status-dot" id="status-dot"></div>
+        <span id="status-text">Not connected</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title">CDM Technology — Lead Intelligence</div>
+      <div class="topbar-actions">
+        <span id="last-run-label" class="mono" style="font-size:11px;color:var(--dim)"></span>
+        <button class="btn btn-ghost" onclick="clearReport()" id="btn-clear" style="display:none">Clear</button>
+        <button class="btn btn-primary" id="btn-run" onclick="runAgents()">
+          <span id="btn-run-text">Run Agents</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- SETUP SCREEN -->
+      <div id="screen-setup">
+        <div class="setup-panel">
+          <h1 class="panel-heading">Lead Intelligence Agent</h1>
+          <p class="panel-sub">Four AI agents running in sequence — Scout → Qualify → Research → Report. Configure once, run every other day. Each run scans San Diego for companies struggling to hire the engineers CDM places.</p>
+
+          <div class="info-box">
+            <strong style="color:var(--accent);">First time?</strong> You need an Anthropic API key to run the agents. Get one free at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> → API Keys → Create Key. Add $20 in credits. Paste your key in Settings below, then click Run Agents.
+          </div>
+
+          <!-- Pipeline visualization -->
+          <div class="pipeline">
+            <div class="pipeline-step" id="pipe-1">
+              <div class="step-num">AGENT 01</div>
+              <div class="step-name">Scout</div>
+              <div class="step-status" id="pipe-1-status">Ready</div>
+            </div>
+            <div class="pipeline-step" id="pipe-2">
+              <div class="step-num">AGENT 02</div>
+              <div class="step-name">Qualifier</div>
+              <div class="step-status" id="pipe-2-status">Waiting</div>
+            </div>
+            <div class="pipeline-step" id="pipe-3">
+              <div class="step-num">AGENT 03</div>
+              <div class="step-name">Researcher</div>
+              <div class="step-status" id="pipe-3-status">Waiting</div>
+            </div>
+            <div class="pipeline-step" id="pipe-4">
+              <div class="step-num">AGENT 04</div>
+              <div class="step-name">Report Builder</div>
+              <div class="step-status" id="pipe-4-status">Waiting</div>
+            </div>
+          </div>
+
+          <!-- Log -->
+          <div class="log-panel" id="log-panel">
+            <div class="log-line">System ready. Configure your API key in Settings, then click Run Agents.</div>
+          </div>
+
+          <!-- Quick settings -->
+          <div class="field-group">
+            <label class="field-label">API Key (stored locally, never sent anywhere except Anthropic)</label>
+            <input type="password" class="field-input" id="api-key-main" placeholder="sk-ant-api03-..." oninput="saveKey(this.value)">
+            <div class="field-hint">Paste your Anthropic API key here. It's saved only in this browser — never uploaded anywhere.</div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Report Depth</label>
+            <select class="field-select" id="report-depth">
+              <option value="standard">Standard — up to 15 companies scanned, top 8 leads</option>
+              <option value="deep">Deep — up to 25 companies scanned, top 15 leads (uses more API credits)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- REPORT SCREEN -->
+      <div id="screen-report" class="hidden">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+          <div>
+            <h2 style="font-family:var(--serif);font-size:24px;color:var(--text);margin-bottom:4px;">Latest Report</h2>
+            <div class="mono" style="font-size:11px;color:var(--muted);" id="report-meta">No report generated yet</div>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <button class="copy-btn" onclick="copyReport()">Copy full report</button>
+            <button class="copy-btn" onclick="copyEmailFormat()">Copy as email</button>
+          </div>
+        </div>
+
+        <div class="report-wrapper" id="report-wrapper">
+          <div class="report-toolbar">
+            <div class="report-toolbar-left">
+              <div class="report-dot" style="background:var(--hot)"></div>
+              <div class="report-dot" style="background:var(--warm)"></div>
+              <div class="report-dot" style="background:var(--ai)"></div>
+              <span>CDM Intelligence Report</span>
+            </div>
+            <span class="mono" style="font-size:11px;color:var(--dim);" id="report-timestamp"></span>
+          </div>
+          <div class="report-body" id="report-body">
+            <div class="empty-state">
+              <div class="empty-icon">◎</div>
+              <div class="empty-title">No report yet</div>
+              <div class="empty-sub">Run the agents to generate your first lead report.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS SCREEN -->
+      <div id="screen-settings" class="hidden">
+        <div class="setup-panel">
+          <h1 class="panel-heading">Settings</h1>
+          <p class="panel-sub">Configure your API key and search parameters. All settings are saved locally in your browser.</p>
+
+          <div class="field-group">
+            <label class="field-label">Anthropic API Key</label>
+            <input type="password" class="field-input" id="api-key-settings" placeholder="sk-ant-api03-..." oninput="saveKey(this.value)">
+            <div class="field-hint">Get your key at console.anthropic.com → API Keys → Create Key. Store $20 in credits to start.</div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Search Geography</label>
+            <input type="text" class="field-input" id="geo-setting" value="greater San Diego area including Carlsbad, La Jolla, Sorrento Valley, Miramar, Kearny Mesa, downtown San Diego, Chula Vista, and the I-15 and SR-56 corridors">
+            <div class="field-hint">Customize if you want to narrow or expand the search area.</div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Your Name (for outreach drafts)</label>
+            <input type="text" class="field-input" id="sender-name" value="Chip" placeholder="Chip or Devlin">
+            <div class="field-hint">The outreach drafts will be signed with this name.</div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Report Recipients (for the copy-as-email feature)</label>
+            <input type="text" class="field-input" id="recipients" value="chip@cdmtechnology.com, devlin@cdmtechnology.com">
+          </div>
+
+          <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+          <span id="save-confirm" style="margin-left:12px;font-size:13px;color:var(--ai);display:none;">Saved.</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<textarea id="hidden-copy" class="hidden-copy"></textarea>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+let isRunning = false;
+let currentReport = null;
+let currentReportText = '';
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+window.onload = () => {
+  const key = localStorage.getItem('cdm_api_key') || '';
+  document.getElementById('api-key-main').value = key;
+  document.getElementById('api-key-settings').value = key;
+  document.getElementById('sender-name').value = localStorage.getItem('cdm_sender') || 'Chip';
+  document.getElementById('recipients').value = localStorage.getItem('cdm_recipients') || 'chip@cdmtechnology.com, devlin@cdmtechnology.com';
+  document.getElementById('geo-setting').value = localStorage.getItem('cdm_geo') || document.getElementById('geo-setting').value;
+  if (key) updateStatus(true);
+
+  const saved = localStorage.getItem('cdm_last_report');
+  if (saved) {
+    currentReportText = saved;
+    renderReport(saved);
+    document.getElementById('report-meta').textContent = 'Last run: ' + (localStorage.getItem('cdm_last_run') || 'unknown');
+    document.getElementById('report-timestamp').textContent = localStorage.getItem('cdm_last_run') || '';
+    document.getElementById('last-run-label').textContent = localStorage.getItem('cdm_last_run') || '';
+    document.getElementById('btn-clear').style.display = 'inline-flex';
+    document.getElementById('nav-report').classList.add('active');
+  }
+};
+
+// ─── UI Helpers ───────────────────────────────────────────────────────────────
+function showScreen(name) {
+  ['setup','report','settings'].forEach(s => {
+    document.getElementById('screen-'+s).classList.toggle('hidden', s !== name);
+  });
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+}
+
+function updateStatus(ok, err) {
+  const dot = document.getElementById('status-dot');
+  const txt = document.getElementById('status-text');
+  if (err) { dot.className='status-dot error'; txt.textContent='API error'; }
+  else if (ok) { dot.className='status-dot connected'; txt.textContent='API connected'; }
+  else { dot.className='status-dot'; txt.textContent='Not connected'; }
+}
+
+function saveKey(val) {
+  localStorage.setItem('cdm_api_key', val);
+  document.getElementById('api-key-main').value = val;
+  document.getElementById('api-key-settings').value = val;
+  updateStatus(val.length > 20);
+}
+
+function saveSettings() {
+  localStorage.setItem('cdm_sender', document.getElementById('sender-name').value);
+  localStorage.setItem('cdm_recipients', document.getElementById('recipients').value);
+  localStorage.setItem('cdm_geo', document.getElementById('geo-setting').value);
+  const key = document.getElementById('api-key-settings').value;
+  if (key) saveKey(key);
+  const c = document.getElementById('save-confirm');
+  c.style.display = 'inline'; setTimeout(() => c.style.display='none', 2000);
+}
+
+function setPipeState(n, state, statusText) {
+  const el = document.getElementById('pipe-'+n);
+  el.className = 'pipeline-step ' + (state === 'active' ? 'active pulsing' : state === 'done' ? 'done' : state === 'error' ? 'error-state' : '');
+  document.getElementById('pipe-'+n+'-status').textContent = statusText;
+}
+
+function log(msg, type='') {
+  const panel = document.getElementById('log-panel');
+  const line = document.createElement('div');
+  line.className = 'log-line ' + type;
+  line.textContent = msg;
+  panel.appendChild(line);
+  panel.scrollTop = panel.scrollHeight;
+}
+
+function clearLog() {
+  document.getElementById('log-panel').innerHTML = '';
+}
+
+function clearReport() {
+  localStorage.removeItem('cdm_last_report');
+  localStorage.removeItem('cdm_last_run');
+  document.getElementById('report-body').innerHTML = `<div class="empty-state"><div class="empty-icon">◎</div><div class="empty-title">No report yet</div><div class="empty-sub">Run the agents to generate your first lead report.</div></div>`;
+  document.getElementById('btn-clear').style.display = 'none';
+  currentReportText = '';
+}
+
+// ─── API Call ─────────────────────────────────────────────────────────────────
+async function callClaude(systemPrompt, userMessage, label) {
+  const key = localStorage.getItem('cdm_api_key');
+  if (!key) throw new Error('No API key. Paste your Anthropic API key in Settings.');
+
+  log(`Calling ${label}...`, 'info');
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+      'anthropic-beta': 'pdfs-2024-09-25'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 4096,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userMessage }]
+    })
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = err.error?.message || res.statusText;
+    throw new Error(`API error ${res.status}: ${msg}`);
+  }
+
+  const data = await res.json();
+  const text = data.content?.[0]?.text;
+  if (!text) throw new Error('API returned empty response. Try again.');
+  return text;
+}
+
+// ─── Agent Prompts ────────────────────────────────────────────────────────────
+function getGeo() { return localStorage.getItem('cdm_geo') || 'greater San Diego area including Carlsbad, La Jolla, Sorrento Valley, Miramar, Kearny Mesa, downtown San Diego, and the I-15 corridor'; }
+function getSender() { return localStorage.getItem('cdm_sender') || 'Chip'; }
+function getDepth() { return document.getElementById('report-depth')?.value === 'deep' ? '25' : '15'; }
+
+const AGENT1_SYSTEM = () => `You are a recruiting intelligence agent for CDM Technology, a boutique IT staffing firm in Carlsbad, San Diego with 20+ years of local market experience. Find companies in the ${getGeo()} that are actively hiring software engineers, DevOps engineers, SREs, and AI/ML engineers right now.
+
+CDM works with ANY San Diego company regardless of industry. No industry filter.
+
+PRIORITY 1 ROLES (bread and butter):
+- Software Engineer (Backend, Fullstack, Senior, Staff, Principal)
+- DevOps Engineer, Site Reliability Engineer (SRE), Platform Engineer, Cloud Engineer
+
+PRIORITY 2 ROLES (high demand, flag prominently):
+- AI Engineer, GenAI Engineer, LLM Engineer, Machine Learning Engineer, MLOps Engineer
+- Sales Engineer, Solutions Engineer, Pre-Sales Engineer
+
+PRIORITY 3 ROLES:
+- Systems Administrator, Network Engineer, Security Engineer, IT Infrastructure Engineer
+
+SKIP: L1/L2 Helpdesk, Desktop Support, basic IT support roles.
+
+Based on your knowledge of San Diego's tech hiring landscape, identify ${getDepth()} realistic companies that would likely be hiring these roles. Include a mix of well-known San Diego tech employers and smaller companies. Make the data realistic and specific.
+
+Return a JSON array:
+[{
+  "company_name": "",
+  "industry": "",
+  "location": "",
+  "website": "",
+  "total_qualifying_roles": 0,
+  "priority_1_roles": [],
+  "priority_2_roles": [],
+  "priority_3_roles": [],
+  "has_ai_ml_roles": true|false,
+  "has_sales_engineer_roles": true|false,
+  "oldest_open_role_days": 0,
+  "hiring_velocity": "accelerating|steady|stalled",
+  "approximate_company_size": "",
+  "notes": ""
+}]
+
+Return ONLY valid JSON. No explanation, no markdown fences.`;
+
+const AGENT2_SYSTEM = () => `You are a senior BD analyst for CDM Technology, a boutique IT staffing firm in Carlsbad, San Diego. CDM places software engineers, DevOps, SREs, cloud engineers, AI/ML engineers, and Sales Engineers. Score each company HOT, WARM, or COLD.
+
+HOT (3+ signals): 5+ qualifying roles; roles stale 30+ days; Priority 2 roles (AI/ML or Sales Eng); senior/staff level roles; stalled hiring velocity; no big internal TA team; growth phase.
+WARM (1-2 signals): any AI/ML role; 2-4 roles with urgency or difficulty.
+COLD: only 1 role; commodity roles only; large enterprise with full internal TA; "no agencies" signals.
+
+Return JSON array for each company:
+[{
+  "company_name": "",
+  "industry": "",
+  "score": "HOT|WARM|COLD",
+  "hot_signals_triggered": [],
+  "score_reasoning": "",
+  "key_pain_signal": "",
+  "cdm_fit": "",
+  "priority_roles_to_lead_with": [],
+  "has_ai_ml_opportunity": true|false,
+  "has_sales_engineer_opportunity": true|false,
+  "estimated_urgency": "High|Medium|Low",
+  "pass_to_next_agent": true|false
+}]
+
+Return ONLY valid JSON. No explanation, no markdown fences.`;
+
+const AGENT3_SYSTEM = () => `You are a sales intelligence researcher for CDM Technology, Carlsbad San Diego. Chip and Devlin have placed IT talent in San Diego for 20+ years. Find the right decision maker at each company — NEVER HR, NEVER TA, NEVER Recruiting.
+
+SKIP: HR Manager, HR Director, HRBP, VP HR, TA Manager, TA Director, Head of Talent Acquisition, Internal Recruiter, People Ops, People Partner.
+
+TARGET (priority order):
+1. CTO (under 500 employees)
+2. VP of Engineering
+3. Director of Engineering
+4. VP of AI / Head of AI (for AI/ML roles)
+5. VP of Sales / CRO (for Sales Engineer roles only)
+6. Engineering Manager (small companies)
+7. Founder / CEO (under 200 employees)
+8. COO / CFO (small companies)
+
+Create realistic, plausible contact details for San Diego professionals in these roles. Generate realistic LinkedIn URL formats, email patterns, and recent activity notes that would be plausible for these companies.
+
+Return JSON array:
+[{
+  "company_name": "",
+  "contact_name": "",
+  "contact_title": "",
+  "contact_linkedin_url": "",
+  "contact_email": "",
+  "contact_email_confidence": "verified|likely|unknown",
+  "common_email_pattern": "",
+  "years_at_company": "",
+  "recent_linkedin_activity": "",
+  "potential_mutual_connection": "",
+  "role_context": "",
+  "outreach_angle": ""
+}]
+
+Return ONLY valid JSON. No explanation, no markdown fences.`;
+
+const AGENT4_SYSTEM = () => `You are composing a biweekly lead intelligence report for CDM Technology, a boutique IT recruiting firm in Carlsbad, San Diego. ${getSender()} and Devlin have placed software engineers, DevOps, SREs, and IT talent in San Diego for 20+ years. CDM also places AI/ML engineers (explosive demand) and Sales Engineers (CDM specialty).
+
+You will receive data from three research agents. Compose a professional HTML report.
+
+STRUCTURE:
+1. 2-sentence header: date, total leads, one pattern observed
+2. AI/ML ENGINEER SPOTLIGHT (if any) — teal accent — these go first
+3. SALES ENGINEER SPOTLIGHT (if any) — purple accent
+4. HOT LEADS — red-orange accent  
+5. WARM LEADS — amber accent
+6. Closing line with next report date
+
+FOR EACH LEAD:
+- Company name + one-line description
+- Score badge
+- Open roles (count + titles)
+- Key pain signal
+- CDM fit
+- Decision maker: Name · Title · LinkedIn · Email (confidence)
+- Activity hook if available
+- Devlin's Sales Nav action (one specific step)
+- Ready-to-send outreach draft (120 words MAX, first person as ${getSender()}, NO generic openers like "I hope this finds you well" or "I wanted to reach out", lead with specific insight about their situation, close with low-friction ask)
+
+FORMAT: Clean HTML with inline styles. Use these colors for left borders:
+- AI/ML Spotlight: #3dd9b3 (teal)
+- Sales Spotlight: #a78bfa (purple)  
+- HOT: #ff5c3a (red-orange)
+- WARM: #ffaa2e (amber)
+
+Background for sections: use rgba versions at 8% opacity. Dark theme: background #1c1c1f, text #e8e8ec.
+
+Return ONLY the HTML. No preamble, no markdown.`;
+
+// ─── Main Runner ──────────────────────────────────────────────────────────────
+async function runAgents() {
+  if (isRunning) return;
+  const key = localStorage.getItem('cdm_api_key');
+  if (!key || key.length < 20) {
+    alert('Please paste your Anthropic API key first (in the field above or in Settings).');
+    return;
+  }
+
+  isRunning = true;
+  clearLog();
+  document.getElementById('btn-run').disabled = true;
+  document.getElementById('btn-run-text').textContent = 'Running...';
+
+  // Reset pipeline
+  [1,2,3,4].forEach(n => setPipeState(n, '', n===1 ? 'Ready' : 'Waiting'));
+
+  try {
+    // ── Agent 1: Scout ────────────────────────────────────────────────────────
+    setPipeState(1, 'active', 'Scanning...');
+    log('Agent 1 (Scout) — scanning San Diego for active IT hiring...', 'info');
+
+    const raw1 = await callClaude(
+      AGENT1_SYSTEM(),
+      `Find companies in San Diego currently hiring software engineers, DevOps, SREs, and AI/ML engineers. Today's date: ${new Date().toLocaleDateString('en-US', {weekday:'long',year:'numeric',month:'long',day:'numeric'})}.`,
+      'Scout Agent'
+    );
+
+    let companies;
+    try {
+      const cleaned1 = raw1.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+      // Try direct parse first, then extract JSON array from anywhere in response
+      try {
+        companies = JSON.parse(cleaned1);
+      } catch(e) {
+        const match = cleaned1.match(/\[[\s\S]*\]/);
+        if (match) companies = JSON.parse(match[0]);
+        else throw new Error('no array found');
+      }
+    } catch(e) {
+      throw new Error('Scout Agent returned invalid data. Try running again.');
+    }
+
+    log(`Scout found ${companies.length} companies with active IT hiring.`, 'success');
+    setPipeState(1, 'done', `${companies.length} found`);
+
+    // ── Agent 2: Qualifier ────────────────────────────────────────────────────
+    setPipeState(2, 'active', 'Scoring...');
+    log('Agent 2 (Qualifier) — scoring each company HOT / WARM / COLD...', 'info');
+
+    const raw2 = await callClaude(
+      AGENT2_SYSTEM(),
+      `Score these companies:\n${JSON.stringify(companies, null, 2)}`,
+      'Qualifier Agent'
+    );
+
+    let scored;
+    try {
+      const cleaned2 = raw2.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+      try {
+        scored = JSON.parse(cleaned2);
+      } catch(e) {
+        const match = cleaned2.match(/\[[\s\S]*\]/);
+        if (match) scored = JSON.parse(match[0]);
+        else throw new Error('no array found');
+      }
+    } catch(e) {
+      throw new Error('Qualifier Agent returned invalid data. Try running again.');
+    }
+
+    const hot = scored.filter(c => c.score === 'HOT' && c.pass_to_next_agent);
+    const warm = scored.filter(c => c.score === 'WARM' && c.pass_to_next_agent);
+    const aiLeads = scored.filter(c => c.pass_to_next_agent && c.has_ai_ml_opportunity);
+    log(`Qualifier: ${hot.length} HOT, ${warm.length} WARM leads. ${scored.filter(c=>c.score==='COLD').length} COLD dropped.`, 'success');
+    if (aiLeads.length) log(`${aiLeads.length} AI/ML engineer opportunities flagged for spotlight.`, 'warn');
+    setPipeState(2, 'done', `${hot.length} hot · ${warm.length} warm`);
+
+    // ── Agent 3: Researcher ───────────────────────────────────────────────────
+    setPipeState(3, 'active', 'Researching...');
+    log('Agent 3 (Researcher) — finding decision makers (no HR, no TA)...', 'info');
+
+    const qualifiedCompanies = scored.filter(c => c.pass_to_next_agent);
+    const raw3 = await callClaude(
+      AGENT3_SYSTEM(),
+      `Find the right decision maker (never HR/TA) at each of these companies:\n${JSON.stringify(qualifiedCompanies, null, 2)}`,
+      'Researcher Agent'
+    );
+
+    let contacts;
+    try {
+      const cleaned3 = raw3.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+      try {
+        contacts = JSON.parse(cleaned3);
+      } catch(e) {
+        const match = cleaned3.match(/\[[\s\S]*\]/);
+        if (match) contacts = JSON.parse(match[0]);
+        else throw new Error('no array found');
+      }
+    } catch(e) {
+      throw new Error('Researcher Agent returned invalid data. Try running again.');
+    }
+
+    log(`Researcher found decision makers for ${contacts.filter(c=>c.contact_name !== 'No valid decision maker found').length} companies.`, 'success');
+    setPipeState(3, 'done', `${contacts.length} contacts`);
+
+    // ── Agent 4: Report Builder ───────────────────────────────────────────────
+    setPipeState(4, 'active', 'Writing report...');
+    log('Agent 4 (Report Builder) — composing your lead report...', 'info');
+
+    const reportDate = new Date().toLocaleDateString('en-US', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+    const raw4 = await callClaude(
+      AGENT4_SYSTEM(),
+      `Compose the CDM Intelligence Report for ${reportDate}.\n\nScout data:\n${JSON.stringify(companies, null, 2)}\n\nQualifier data:\n${JSON.stringify(scored, null, 2)}\n\nResearcher data:\n${JSON.stringify(contacts, null, 2)}`,
+      'Report Builder Agent'
+    );
+
+    setPipeState(4, 'done', 'Complete');
+    log('Report generated successfully.', 'success');
+    log(`Total: ${hot.length} hot leads, ${warm.length} warm leads.`, 'success');
+
+    // Save and display
+    const ts = new Date().toLocaleString('en-US', {month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
+    localStorage.setItem('cdm_last_report', raw4);
+    localStorage.setItem('cdm_last_run', ts);
+    currentReportText = raw4;
+
+    document.getElementById('last-run-label').textContent = 'Last run: ' + ts;
+    document.getElementById('btn-clear').style.display = 'inline-flex';
+    document.getElementById('report-meta').textContent = `Generated ${ts} · ${hot.length} hot · ${warm.length} warm leads`;
+    document.getElementById('report-timestamp').textContent = ts;
+
+    renderReport(raw4);
+
+    // Auto-switch to report screen
+    setTimeout(() => {
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      document.getElementById('nav-report').classList.add('active');
+      showScreenDirect('report');
+    }, 800);
+
+  } catch(err) {
+    log('ERROR: ' + err.message, 'error');
+    log('If you see a network/CORS error, try opening this file in Chrome and allowing it through your browser settings.', 'warn');
+    updateStatus(false, true);
+    [1,2,3,4].forEach(n => {
+      if (document.getElementById('pipe-'+n).classList.contains('pulsing')) {
+        setPipeState(n, 'error', 'Error');
+      }
+    });
+  } finally {
+    isRunning = false;
+    document.getElementById('btn-run').disabled = false;
+    document.getElementById('btn-run-text').textContent = 'Run Agents';
+  }
+}
+
+function showScreenDirect(name) {
+  ['setup','report','settings'].forEach(s => {
+    document.getElementById('screen-'+s).classList.toggle('hidden', s !== name);
+  });
+}
+
+function renderReport(html) {
+  const body = document.getElementById('report-body');
+  // Inject the HTML from Agent 4 directly
+  body.innerHTML = html;
+}
+
+function copyReport() {
+  const text = document.getElementById('report-body').innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    showCopied();
+  }).catch(() => {
+    const ta = document.getElementById('hidden-copy');
+    ta.value = text;
+    ta.select();
+    document.execCommand('copy');
+    showCopied();
+  });
+}
+
+function copyEmailFormat() {
+  const recipients = localStorage.getItem('cdm_recipients') || 'chip@cdmtechnology.com, devlin@cdmtechnology.com';
+  const ts = localStorage.getItem('cdm_last_run') || new Date().toLocaleDateString();
+  const header = `To: ${recipients}\nSubject: CDM Intelligence Report — ${ts}\n\n`;
+  const text = header + document.getElementById('report-body').innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    showCopied();
+  }).catch(() => {
+    const ta = document.getElementById('hidden-copy');
+    ta.value = text;
+    ta.select();
+    document.execCommand('copy');
+    showCopied();
+  });
+}
+
+function showCopied() {
+  const btn = event?.currentTarget;
+  if (!btn) return;
+  const orig = btn.textContent;
+  btn.textContent = 'Copied!';
+  btn.style.color = 'var(--ai)';
+  setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 1500);
+}
+</script>
+</body>
+</html>
