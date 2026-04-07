@@ -82,7 +82,7 @@
         Anthropic API Key
         <a href="https://console.anthropic.com" target="_blank">Get key →</a>
       </div>
-      <input type="password" class="key-input" id="claude-key" placeholder="sk-ant-api03-..." oninput="checkKeys()" autocomplete="off">
+      <input type="password" class="key-input" id="claude-key" placeholder="sk-ant-api03-..." oninput="checkKeys()" autocomplete="on" name="anthropic-api-key">
       <div class="key-status no" id="claude-status">Not set</div>
     </div>
     <div class="key-block">
@@ -90,7 +90,7 @@
         RapidAPI Key (JSearch — free tier)
         <a href="https://rapidapi.com/letscrape-6bRBa3QguO5/api/jsearch" target="_blank">Get free key →</a>
       </div>
-      <input type="password" class="key-input" id="rapid-key" placeholder="Paste RapidAPI key here..." oninput="checkKeys()" autocomplete="off">
+      <input type="password" class="key-input" id="rapid-key" placeholder="Paste RapidAPI key here..." oninput="checkKeys()" autocomplete="off" value="75f831979dmshabb4296be2a23eep1f1951jsn4462aa6c60ac">
       <div class="key-status no" id="rapid-status">Not set</div>
     </div>
   </div>
@@ -133,8 +133,8 @@ function checkKeys() {
   // Save keys to localStorage whenever they change
   const ck = document.getElementById("claude-key").value.trim();
   const rk = document.getElementById("rapid-key").value.trim();
-  if (ck.length > 20) localStorage.setItem("cdm_claude_key", ck);
-  if (rk.length > 20) localStorage.setItem("cdm_rapid_key", rk);
+  if (ck.length > 20) { localStorage.setItem("cdm_claude_key", ck); }
+  if (rk.length > 20) { localStorage.setItem("cdm_rapid_key", rk); }
   const ck = document.getElementById('claude-key').value.trim();
   const rk = document.getElementById('rapid-key').value.trim();
   const cs = document.getElementById('claude-status');
@@ -149,10 +149,22 @@ function checkKeys() {
 
 // Load saved keys on startup
 window.onload = function() {
+  // Always pre-fill RapidAPI key
+  document.getElementById("rapid-key").value = "75f831979dmshabb4296be2a23eep1f1951jsn4462aa6c60ac";
+  // Load saved Anthropic key
   const ck = localStorage.getItem("cdm_claude_key");
-  const rk = localStorage.getItem("cdm_rapid_key");
-  if (ck) { document.getElementById("claude-key").value = ck; }
-  if (rk) { document.getElementById("rapid-key").value = rk; }
+  if (ck && ck.length > 20) {
+    document.getElementById("claude-key").value = ck;
+  } else {
+    // Prompt user for key if not saved
+    setTimeout(function() {
+      const key = prompt("Welcome to CDM Intelligence Agent!\n\nPaste your Anthropic API key to get started:\n(You only need to do this once — it will be saved automatically)");
+      if (key && key.length > 20) {
+        document.getElementById("claude-key").value = key;
+        localStorage.setItem("cdm_claude_key", key);
+      }
+    }, 500);
+  }
   checkKeys();
 };
 
@@ -175,7 +187,7 @@ function clearLog() {
 }
 
 async function searchJobs(query) {
-  const key = document.getElementById('rapid-key').value.trim();
+  const key = document.getElementById('rapid-key').value.trim() || localStorage.getItem("cdm_rapid_key") || "75f831979dmshabb4296be2a23eep1f1951jsn4462aa6c60ac";
   const url = 'https://jsearch.p.rapidapi.com/search?query=' + encodeURIComponent(query) + '&page=1&num_pages=1&date_posted=month&country=us';
   const r = await fetch(url, {
     method: 'GET',
@@ -518,3 +530,4 @@ function emailReport() {
   const to = encodeURIComponent('chip@cdmtechnology.com,devlin@cdmtechnology.com');
   window.open('mailto:' + to + '?subject=' + subject + '&body=' + body);
 }
+</script>
