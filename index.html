@@ -224,6 +224,14 @@ function isSanDiego(job) {
 
 const SKIP_KEYWORDS = ['staffing','recruiting','recruiter','talent acquisition','manpower','robert half','kelly services','randstad','adecco','insight global','apex systems','teksystems','tek systems','hired','indeed','ziprecruiter','headhunter','placement agency','staffmark','aerotek'];
 
+// Companies CDM cannot realistically win — massive internal TA, will never use a boutique firm
+const EXCLUDED_COMPANIES = ['qualcomm','apple','google','meta','amazon','microsoft','waymo','saic','bae systems','lockheed','northrop','raytheon','booz allen','leidos','general dynamics','boeing','l3harris','perspecta','cisco','oracle','salesforce','servicenow','workday','nvidia','intel','ibm','hewlett','deloitte','accenture','kpmg','mckinsey','navy federal','bank of america','wells fargo','jpmorgan','goldman sachs','general atomics','snowflake','palantir','databricks','crowdstrike','palo alto networks','zendesk','hubspot','twilio','stripe','airbnb','uber','lyft','twitter','linkedin','adobe','autodesk','intuit','ebay','paypal'];
+
+function isExcludedCompany(name) {
+  const n = name.toLowerCase();
+  return EXCLUDED_COMPANIES.some(k => n.includes(k));
+}
+
 function isSkipCompany(name) {
   const n = name.toLowerCase();
   return SKIP_KEYWORDS.some(k => n.includes(k));
@@ -233,7 +241,7 @@ function extractCompanies(jobs) {
   const map = {};
   for (const job of jobs) {
     const name = job.employer_name;
-    if (!name || isSkipCompany(name)) continue;
+    if (!name || isSkipCompany(name) || isExcludedCompany(name)) continue;
     if (!isSanDiego(job)) continue;
     if (!map[name]) {
       map[name] = {
@@ -443,38 +451,4 @@ Return ONLY the HTML fragment. No markdown. No preamble. No html/body tags.`;
     log('Report complete! ' + hot.length + ' hot leads, ' + warm.length + ' warm leads from live job data.', 'ok');
 
     const ts = new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
-    document.getElementById('report-meta').textContent = 'Generated ' + ts + ' · LIVE DATA · ' + hot.length + ' hot · ' + warm.length + ' warm';
-    document.getElementById('report-body').innerHTML = raw4;
-
-  } catch(e) {
-    log('ERROR: ' + e.message, 'err');
-    [1,2,3,4].forEach(n => {
-      if (document.getElementById('p'+n).className.includes('active')) setStep(n, 'err', 'Error');
-    });
-  } finally {
-    running = false;
-    document.getElementById('btn-run').disabled = false;
-    document.getElementById('btn-text').textContent = 'Run Agents';
-  }
-}
-
-function copyReport() {
-  const text = document.getElementById('report-body').innerText;
-  navigator.clipboard.writeText(text).then(() => {
-    const b = document.querySelector('.copy-btn');
-    const orig = b.textContent;
-    b.textContent = 'Copied!';
-    b.style.color = '#3dd9b3';
-    setTimeout(() => { b.textContent = orig; b.style.color = ''; }, 2000);
-  }).catch(() => {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-  });
-}
-</script>
-</body>
-</html>
+    document.getE
