@@ -209,9 +209,14 @@ function parseJSON(raw) {
   }
 }
 
-const SD_CITIES = ['san diego','carlsbad','la jolla','sorrento','chula vista','escondido','oceanside','vista','san marcos','el cajon','miramar','kearny','encinitas','solana beach','del mar','poway','santee','spring valley','lemon grove','national city','coronado'];
+const SD_CITIES = ['san diego','carlsbad','la jolla','sorrento valley','chula vista','escondido','oceanside','vista','san marcos','el cajon','miramar','kearny','encinitas','solana beach','del mar','poway','santee','lemon grove','national city','coronado'];
 
 function isSanDiego(job) {
+  // Accept all CA jobs and let Claude filter by SD
+  const state = (job.job_state || "").toUpperCase();
+  if (state && state !== "CA" && state.length === 2) return false;
+  return true; // Accept all remaining — Claude will refine
+  // Original strict filter below (disabled)
   const loc = ((job.job_city || '') + ' ' + (job.job_state || '') + ' ' + (job.job_country || '')).toLowerCase();
   if (job.job_state && job.job_state.toUpperCase() !== 'CA') return false;
   return SD_CITIES.some(c => loc.includes(c));
