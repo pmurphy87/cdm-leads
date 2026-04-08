@@ -5,103 +5,60 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CDM Intelligence Agent</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: system-ui, sans-serif; background: #0d0d0f; color: #e8e8ec; min-height: 100vh; font-size: 14px; }
-  .topbar { background: #141416; border-bottom: 1px solid #2a2a2f; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
-  .logo { font-size: 18px; font-weight: 700; color: #c8f04a; letter-spacing: -0.5px; }
-  .logo span { font-size: 11px; font-weight: 400; color: #555; margin-left: 8px; }
-  .btn-run { background: #c8f04a; color: #0d0d0f; border: none; border-radius: 7px; padding: 10px 24px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
-  .btn-run:hover { background: #d4f55c; }
-  .btn-run:disabled { background: #2a2a2f; color: #555; cursor: not-allowed; }
-  .main { padding: 24px; max-width: 960px; margin: 0 auto; }
-
-  .keys-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
-  .key-block { background: #141416; border: 1px solid #2a2a2f; border-radius: 10px; padding: 16px 18px; }
-  .key-label { font-size: 10px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
-  .key-label a { color: #c8f04a; text-decoration: none; font-size: 10px; }
-  .key-label a:hover { text-decoration: underline; }
-  .key-input { width: 100%; background: #1c1c1f; border: 1px solid #2a2a2f; border-radius: 6px; padding: 9px 13px; font-size: 12px; font-family: monospace; color: #e8e8ec; outline: none; transition: border-color 0.15s; }
-  .key-input:focus { border-color: #c8f04a; }
-  .key-input::placeholder { color: #333; }
-  .key-status { font-size: 11px; margin-top: 6px; }
-  .key-status.ok { color: #3dd9b3; }
-  .key-status.no { color: #555; }
-
-  .info-banner { background: rgba(200,240,74,0.05); border: 1px solid rgba(200,240,74,0.18); border-radius: 8px; padding: 14px 18px; margin-bottom: 18px; font-size: 12.5px; color: #a0b840; line-height: 1.7; }
-  .info-banner strong { color: #c8f04a; display: block; margin-bottom: 4px; }
-  .info-banner a { color: #c8f04a; }
-
-  .pipeline { display: grid; grid-template-columns: repeat(4, 1fr); margin-bottom: 16px; border-radius: 10px; overflow: hidden; border: 1px solid #2a2a2f; }
-  .pipe-step { background: #141416; padding: 14px 16px; border-right: 1px solid #2a2a2f; transition: all 0.3s; }
-  .pipe-step:last-child { border-right: none; }
-  .pipe-step.active { background: rgba(200,240,74,0.08); border-right-color: rgba(200,240,74,0.2); }
-  .pipe-step.done { background: rgba(61,217,179,0.06); }
-  .pipe-step.err { background: rgba(255,92,58,0.08); }
-  .pipe-num { font-size: 9px; color: #444; font-family: monospace; letter-spacing: 0.1em; margin-bottom: 4px; }
-  .pipe-name { font-size: 13px; font-weight: 600; color: #e8e8ec; margin-bottom: 3px; }
-  .pipe-status { font-size: 11px; font-family: monospace; color: #555; }
-  .pipe-step.active .pipe-status { color: #c8f04a; }
-  .pipe-step.done .pipe-status { color: #3dd9b3; }
-  .pipe-step.err .pipe-status { color: #ff5c3a; }
-
-  .log { background: #141416; border: 1px solid #2a2a2f; border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; font-family: monospace; font-size: 12px; line-height: 1.9; max-height: 150px; overflow-y: auto; }
-  .log-line { color: #555; }
-  .log-line::before { content: '› '; color: #333; }
-  .log-line.info { color: #aaa; }
-  .log-line.ok { color: #3dd9b3; }
-  .log-line.warn { color: #ffaa2e; }
-  .log-line.err { color: #ff5c3a; }
-
-  .report-area { background: #141416; border: 1px solid #2a2a2f; border-radius: 10px; overflow: hidden; }
-  .report-toolbar { background: #1c1c1f; border-bottom: 1px solid #2a2a2f; padding: 11px 18px; display: flex; align-items: center; justify-content: space-between; }
-  .report-meta { font-size: 11px; color: #555; font-family: monospace; }
-  .copy-btn { background: #1c1c1f; border: 1px solid #2a2a2f; color: #888; border-radius: 5px; padding: 5px 12px; font-size: 12px; cursor: pointer; transition: all 0.15s; font-family: system-ui; }
-  .copy-btn:hover { color: #e8e8ec; border-color: #3a3a42; }
-  .report-body { padding: 24px 28px; line-height: 1.75; font-size: 14px; color: #ccc; min-height: 200px; }
-  .empty { text-align: center; padding: 60px 20px; }
-  .empty-title { font-size: 18px; color: #444; margin-bottom: 8px; }
-  .empty-sub { font-size: 13px; color: #333; }
-
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #2a2a2f; border-radius: 2px; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, sans-serif; background: #0d0d0f; color: #e8e8ec; min-height: 100vh; font-size: 14px; }
+.topbar { background: #141416; border-bottom: 1px solid #2a2a2f; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
+.logo { font-size: 18px; font-weight: 700; color: #c8f04a; }
+.logo span { font-size: 11px; font-weight: 400; color: #555; margin-left: 8px; }
+.btn-run { background: #c8f04a; color: #0d0d0f; border: none; border-radius: 7px; padding: 10px 24px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.btn-run:hover { background: #d4f55c; }
+.btn-run:disabled { background: #2a2a2f; color: #555; cursor: not-allowed; }
+.main { padding: 24px; max-width: 960px; margin: 0 auto; }
+.key-box { background: #141416; border: 1px solid #2a2a2f; border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+.key-box label { display: block; font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; }
+.key-box input { width: 100%; background: #1c1c1f; border: 1px solid #3a3a42; border-radius: 6px; padding: 12px 14px; font-size: 13px; font-family: monospace; color: #e8e8ec; outline: none; }
+.key-box input:focus { border-color: #c8f04a; }
+.pipeline { display: grid; grid-template-columns: repeat(4,1fr); border-radius: 10px; overflow: hidden; border: 1px solid #2a2a2f; margin-bottom: 16px; }
+.pipe-step { background: #141416; padding: 14px 16px; border-right: 1px solid #2a2a2f; }
+.pipe-step:last-child { border-right: none; }
+.pipe-step.active { background: rgba(200,240,74,0.08); }
+.pipe-step.done { background: rgba(61,217,179,0.06); }
+.pipe-step.err { background: rgba(255,92,58,0.08); }
+.pipe-num { font-size: 9px; color: #444; font-family: monospace; letter-spacing: 0.1em; margin-bottom: 4px; }
+.pipe-name { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+.pipe-status { font-size: 11px; font-family: monospace; color: #555; }
+.pipe-step.active .pipe-status { color: #c8f04a; }
+.pipe-step.done .pipe-status { color: #3dd9b3; }
+.pipe-step.err .pipe-status { color: #ff5c3a; }
+.log { background: #141416; border: 1px solid #2a2a2f; border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; font-family: monospace; font-size: 12px; line-height: 1.9; max-height: 150px; overflow-y: auto; }
+.log-line { color: #555; }
+.log-line::before { content: "› "; color: #333; }
+.log-line.info { color: #aaa; }
+.log-line.ok { color: #3dd9b3; }
+.log-line.warn { color: #ffaa2e; }
+.log-line.err { color: #ff5c3a; }
+.report-area { background: #141416; border: 1px solid #2a2a2f; border-radius: 10px; overflow: hidden; }
+.report-toolbar { background: #1c1c1f; border-bottom: 1px solid #2a2a2f; padding: 11px 18px; display: flex; align-items: center; justify-content: space-between; }
+.report-meta { font-size: 11px; color: #555; font-family: monospace; }
+.tbtn { background: #1c1c1f; border: 1px solid #2a2a2f; color: #888; border-radius: 5px; padding: 5px 12px; font-size: 12px; cursor: pointer; margin-left: 8px; }
+.tbtn:hover { color: #e8e8ec; border-color: #3a3a42; }
+.tbtn.green { background: #1a2a1a; border-color: rgba(200,240,74,0.3); color: #c8f04a; }
+.report-body { padding: 24px 28px; line-height: 1.75; font-size: 14px; color: #ccc; min-height: 200px; }
+.empty { text-align: center; padding: 60px 20px; }
+.empty-title { font-size: 18px; color: #444; margin-bottom: 8px; }
+.empty-sub { font-size: 13px; color: #333; }
 </style>
 </head>
 <body>
-
 <div class="topbar">
-  <div class="logo">CDM <span>INTELLIGENCE AGENT · V5 · LIVE DATA</span></div>
+  <div class="logo">CDM <span>INTELLIGENCE AGENT · V5</span></div>
   <button class="btn-run" id="btn-run" onclick="runAgents()"><span id="btn-text">Run Agents</span></button>
 </div>
-
 <div class="main">
 
-  <div class="keys-grid">
-    <div class="key-block">
-      <div class="key-label">
-        Anthropic API Key
-        <a href="https://console.anthropic.com" target="_blank">Get key →</a>
-      </div>
-      <input type="text" class="key-input" id="claude-key" placeholder="Paste your full Anthropic key here then click Save" autocomplete="off">
-      <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
-        <button id="key-save-btn" onclick="saveClaudeKey()" style="background:#c8f04a;color:#0d0d0f;border:none;border-radius:5px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;">Save Key</button>
-        <span id="key-saved-msg" style="display:none;font-size:12px;color:#3dd9b3;">✓ Key saved — you won't need to do this again</span>
-        <span id="claude-status" class="key-status no"></span>
-      </div>
-    </div>
-    <div class="key-block">
-      <div class="key-label">
-        RapidAPI Key (JSearch — free tier)
-        <a href="https://rapidapi.com/letscrape-6bRBa3QguO5/api/jsearch" target="_blank">Get free key →</a>
-      </div>
-      <input type="password" class="key-input" id="rapid-key" placeholder="Paste RapidAPI key here..." oninput="checkKeys()" autocomplete="off" value="75f831979dmshabb4296be2a23eep1f1951jsn4462aa6c60ac">
-      <div class="key-status no" id="rapid-status">Not set</div>
-    </div>
-  </div>
-
-  <div class="info-banner">
-    <strong>How to get your free RapidAPI key (2 minutes):</strong>
-    Go to <a href="https://rapidapi.com/letscrape-6bRBa3QguO5/api/jsearch" target="_blank">rapidapi.com → JSearch</a> → click <strong>Subscribe to Test</strong> → choose <strong>Basic (free, $0/mo)</strong> → your key appears on the right panel under <strong>X-RapidAPI-Key</strong>. Free tier: 200 searches/month — plenty for biweekly reports.
+  <div class="key-box">
+    <label>Anthropic API Key — paste your full key below and it will be remembered</label>
+    <input type="text" id="claude-key" placeholder="Paste your full Anthropic API key here (sk-ant-api03-...)">
   </div>
 
   <div class="pipeline">
@@ -112,105 +69,86 @@
   </div>
 
   <div class="log" id="log">
-    <div class="log-line info">Ready. Add both API keys above and click Run Agents to generate a live lead report.</div>
+    <div class="log-line info">Ready. Paste your Anthropic API key above and click Run Agents.</div>
   </div>
 
   <div class="report-area">
     <div class="report-toolbar">
       <div class="report-meta" id="report-meta">No report generated yet</div>
-      <button class="copy-btn" onclick="copyReport()">Copy report</button><button class="copy-btn" onclick="emailReport()" style="margin-left:8px;background:#1a2a1a;border-color:rgba(200,240,74,0.3);color:#c8f04a;">Email to Chip &amp; Devlin</button>
+      <div>
+        <button class="tbtn" onclick="copyReport()">Copy report</button>
+        <button class="tbtn green" onclick="emailReport()">Email to Chip & Devlin</button>
+      </div>
     </div>
     <div class="report-body" id="report-body">
       <div class="empty">
         <div class="empty-title">No report yet</div>
-        <div class="empty-sub">Add your API keys and click Run Agents to pull live San Diego job data and generate your lead report.</div>
+        <div class="empty-sub">Paste your API key above and click Run Agents.</div>
       </div>
     </div>
   </div>
 
 </div>
-
 <script>
-let running = false;
+var running = false;
+var RAPID_KEY = "75f831979dmshabb4296be2a23eep1f1951jsn4462aa6c60ac";
 
-function checkKeys() {
-  // Save keys to localStorage whenever they change
-  const ck = document.getElementById("claude-key").value.trim();
-  const rk = document.getElementById("rapid-key").value.trim();
-  if (ck.length > 20) { localStorage.setItem("cdm_claude_key", ck); }
-  if (rk.length > 20) { localStorage.setItem("cdm_rapid_key", rk); }
-  const ck = document.getElementById('claude-key').value.trim();
-  const rk = document.getElementById('rapid-key').value.trim();
-  const cs = document.getElementById('claude-status');
-  const rs = document.getElementById('rapid-status');
-  const ckOk = ck.length > 20;
-  const rkOk = rk.length > 20;
-  cs.textContent = ckOk ? '✓ Key set' : 'Not set';
-  cs.className = ckOk ? 'key-status ok' : 'key-status no';
-  rs.textContent = rkOk ? '✓ Key set' : 'Not set';
-  rs.className = rkOk ? 'key-status ok' : 'key-status no';
-}
-
-// Load saved keys on startup
-function saveClaudeKey() {
-  const key = document.getElementById("claude-key").value.trim();
-  if (key.length < 20) { alert("That key looks too short — please paste your full Anthropic API key."); return; }
-  localStorage.setItem("cdm_claude_key", key);
-  document.getElementById("key-save-btn").style.display = "none";
-  document.getElementById("key-saved-msg").style.display = "inline";
-  document.getElementById("claude-key").type = "password";
-}
-
-window.onload = function() {
-  document.getElementById("rapid-key").value = "75f831979dmshabb4296be2a23eep1f1951jsn4462aa6c60ac";
-  const ck = localStorage.getItem("cdm_claude_key");
-  if (ck && ck.length > 20) {
-    document.getElementById("claude-key").value = ck;
-    document.getElementById("claude-status").textContent = "✓ Key saved";
-    document.getElementById("claude-status").className = "key-status ok";
-    document.getElementById("key-save-btn").style.display = "none";
-    document.getElementById("key-saved-msg").style.display = "block";
+// Load saved key on startup
+window.addEventListener('load', function() {
+  var saved = localStorage.getItem('cdm_claude_key');
+  if (saved) {
+    document.getElementById('claude-key').value = saved;
+    addLog('API key loaded from saved settings.', 'ok');
   }
-  document.getElementById("rapid-status").textContent = "✓ Key set";
-  document.getElementById("rapid-status").className = "key-status ok";
-};
+});
+
+// Save key whenever user types
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('claude-key').addEventListener('input', function() {
+    var val = this.value.trim();
+    if (val.length > 30) {
+      localStorage.setItem('cdm_claude_key', val);
+    }
+  });
+});
+
+function getClaudeKey() {
+  var fromField = document.getElementById('claude-key').value.trim();
+  var fromStorage = localStorage.getItem('cdm_claude_key') || '';
+  return fromField.length > 30 ? fromField : fromStorage;
+}
 
 function setStep(n, state, txt) {
   document.getElementById('p'+n).className = 'pipe-step ' + state;
   document.getElementById('p'+n+'s').textContent = txt;
 }
 
-function log(msg, type='') {
-  const l = document.getElementById('log');
-  const d = document.createElement('div');
-  d.className = 'log-line ' + type;
+function addLog(msg, type) {
+  var l = document.getElementById('log');
+  var d = document.createElement('div');
+  d.className = 'log-line ' + (type || '');
   d.textContent = msg;
   l.appendChild(d);
   l.scrollTop = l.scrollHeight;
 }
 
-function clearLog() {
-  document.getElementById('log').innerHTML = '';
-}
+function clearLog() { document.getElementById('log').innerHTML = ''; }
 
 async function searchJobs(query) {
-  const key = "75f831979dmshabb4296be2a23eep1f1951jsn4462aa6c60ac";
-  const url = 'https://jsearch.p.rapidapi.com/search?query=' + encodeURIComponent(query) + '&page=1&num_pages=1&date_posted=month&country=us';
-  const r = await fetch(url, {
+  var url = 'https://jsearch.p.rapidapi.com/search?query=' + encodeURIComponent(query) + '&page=1&num_pages=1&date_posted=month&country=us';
+  var r = await fetch(url, {
     method: 'GET',
-    headers: {
-      'x-rapidapi-host': 'jsearch.p.rapidapi.com',
-      'x-rapidapi-key': key
-    }
+    headers: { 'x-rapidapi-host': 'jsearch.p.rapidapi.com', 'x-rapidapi-key': RAPID_KEY }
   });
-  if (!r.ok) throw new Error('JSearch error ' + r.status + ' — check your RapidAPI key');
-  const d = await r.json();
+  if (!r.ok) throw new Error('JSearch error ' + r.status);
+  var d = await r.json();
   return d.data || [];
 }
 
 async function callClaude(system, user) {
-  const key = document.getElementById('claude-key').value.trim();
-  const r = await fetch('https://api.anthropic.com/v1/messages', {
+  var key = getClaudeKey();
+  if (!key) throw new Error('No Anthropic API key found. Please paste your key in the field above.');
+  var r = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
       'content-type': 'application/json',
@@ -218,279 +156,157 @@ async function callClaude(system, user) {
       'anthropic-version': '2023-06-01',
       'anthropic-dangerous-direct-browser-access': 'true'
     },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 6000,
-      system: system,
-      messages: [{ role: 'user', content: user }]
-    })
+    body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 6000, system: system, messages: [{ role: 'user', content: user }] })
   });
   if (!r.ok) {
-    const e = await r.json().catch(() => ({}));
-    throw new Error('Claude API ' + r.status + ': ' + (e.error?.message || r.statusText));
+    var e = await r.json().catch(function(){return {};});
+    throw new Error('Claude API ' + r.status + ': ' + (e.error && e.error.message ? e.error.message : r.statusText));
   }
-  const d = await r.json();
+  var d = await r.json();
   return d.content[0].text;
 }
 
 function parseJSON(raw) {
-  let s = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+  var s = raw.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
   try { return JSON.parse(s); } catch(e) {
-    const m = s.match(/\[[\s\S]*\]/);
+    var m = s.match(/\[[\s\S]*\]/);
     if (m) { try { return JSON.parse(m[0]); } catch(e2) {} }
-    throw new Error('Could not parse agent response');
+    throw new Error('Could not parse agent response as JSON');
   }
 }
 
-const SD_CITIES = ['san diego','carlsbad','la jolla','sorrento valley','chula vista','escondido','oceanside','vista','san marcos','el cajon','miramar','kearny','encinitas','solana beach','del mar','poway','santee','lemon grove','national city','coronado'];
+var SD_CITIES = ['san diego','carlsbad','la jolla','sorrento','chula vista','escondido','oceanside','vista','san marcos','el cajon','miramar','kearny','encinitas','del mar','poway','santee','national city','coronado'];
+var EXCLUDED = ['qualcomm','apple','google','meta','amazon','microsoft','waymo','saic','bae systems','lockheed','northrop','raytheon','booz allen','leidos','general dynamics','boeing','l3harris','cisco','oracle','salesforce','servicenow','workday','nvidia','intel','ibm','hewlett','deloitte','accenture','snowflake','palantir','databricks','crowdstrike','palo alto networks','zendesk','hubspot','stripe','adobe','autodesk','intuit','ebay','paypal','general atomics','science applications'];
+var SKIP = ['staffing','recruiting','recruiter','talent acquisition','manpower','robert half','kelly services','randstad','adecco','insight global','apex systems','teksystems','tek systems','ziprecruiter','headhunter','staffmark','aerotek'];
+
+function isBadCompany(name) {
+  var n = name.toLowerCase();
+  return EXCLUDED.some(function(k){ return n.includes(k); }) || SKIP.some(function(k){ return n.includes(k); });
+}
 
 function isSanDiego(job) {
-  // Accept all CA jobs and let Claude filter by SD
-  const state = (job.job_state || "").toUpperCase();
-  if (state && state !== "CA" && state.length === 2) return false;
-  return true; // Accept all remaining — Claude will refine
-  // Original strict filter below (disabled)
-  const loc = ((job.job_city || '') + ' ' + (job.job_state || '') + ' ' + (job.job_country || '')).toLowerCase();
-  if (job.job_state && job.job_state.toUpperCase() !== 'CA') return false;
-  return SD_CITIES.some(c => loc.includes(c));
-}
-
-const SKIP_KEYWORDS = ['staffing','recruiting','recruiter','talent acquisition','manpower','robert half','kelly services','randstad','adecco','insight global','apex systems','teksystems','tek systems','hired','indeed','ziprecruiter','headhunter','placement agency','staffmark','aerotek'];
-
-// Companies CDM cannot realistically win — massive internal TA, will never use a boutique firm
-const EXCLUDED_COMPANIES = ['qualcomm','apple','google','meta','amazon','microsoft','waymo','saic','bae systems','lockheed','northrop','raytheon','booz allen','leidos','general dynamics','boeing','l3harris','perspecta','cisco','oracle','salesforce','servicenow','workday','nvidia','intel','ibm','hewlett','deloitte','accenture','kpmg','mckinsey','navy federal','bank of america','wells fargo','jpmorgan','goldman sachs','general atomics','snowflake','palantir','databricks','crowdstrike','palo alto networks','zendesk','hubspot','twilio','stripe','airbnb','uber','lyft','twitter','linkedin','adobe','autodesk','intuit','ebay','paypal'];
-
-function isExcludedCompany(name) {
-  const n = name.toLowerCase();
-  return EXCLUDED_COMPANIES.some(k => n.includes(k));
-}
-
-function isSkipCompany(name) {
-  const n = name.toLowerCase();
-  return SKIP_KEYWORDS.some(k => n.includes(k));
+  var state = (job.job_state || '').toUpperCase();
+  if (state && state !== 'CA' && state.length === 2) return false;
+  var all = [job.job_city, job.job_state, job.job_location, job.employer_headquarters].map(function(f){ return (f||'').toLowerCase(); }).join(' ');
+  if (SD_CITIES.some(function(c){ return all.includes(c); })) return true;
+  if ((state === 'CA' || !state) && (!job.job_city || job.job_city.toLowerCase().includes('remote'))) return true;
+  return false;
 }
 
 function extractCompanies(jobs) {
-  const map = {};
-  for (const job of jobs) {
-    const name = job.employer_name;
-    if (!name || isSkipCompany(name) || isExcludedCompany(name)) continue;
-    if (!isSanDiego(job)) continue;
-    if (!map[name]) {
-      map[name] = {
-        company_name: name,
-        location: (job.job_city || 'San Diego') + ', CA',
-        website: job.employer_website || '',
-        roles: []
-      };
-    }
-    map[name].roles.push({
-      title: job.job_title,
-      posted: job.job_posted_at_datetime_utc,
-      snippet: (job.job_description || '').substring(0, 200)
-    });
-  }
+  var map = {};
+  jobs.forEach(function(job) {
+    var name = job.employer_name;
+    if (!name || isBadCompany(name) || !isSanDiego(job)) return;
+    if (!map[name]) map[name] = { company_name: name, location: (job.job_city||'San Diego')+', CA', website: job.employer_website||'', roles: [] };
+    map[name].roles.push({ title: job.job_title, posted: job.job_posted_at_datetime_utc, snippet: (job.job_description||'').substring(0,200) });
+  });
   return Object.values(map);
 }
 
 async function runAgents() {
   if (running) return;
-  const ck = document.getElementById('claude-key').value.trim() || localStorage.getItem('cdm_claude_key') || '';
-  const rk = "75f831979dmshabb4296be2a23eep1f1951jsn4462aa6c60ac";
-  // validation removed
-  // validation removed
+  var key = getClaudeKey();
+  if (!key || key.length < 20) {
+    alert('Please paste your Anthropic API key in the field above first.');
+    document.getElementById('claude-key').focus();
+    return;
+  }
 
   running = true;
   clearLog();
   document.getElementById('btn-run').disabled = true;
   document.getElementById('btn-text').textContent = 'Running...';
-  [1,2,3,4].forEach(n => setStep(n, '', n === 1 ? 'Ready' : 'Waiting'));
+  [1,2,3,4].forEach(function(n){ setStep(n,'',n===1?'Ready':'Waiting'); });
 
   try {
+    // AGENT 1: SCOUT
+    setStep(1,'active','Searching...');
+    addLog('Agent 1 (Scout) — pulling live San Diego job postings...','info');
 
-    // ── AGENT 1: SCOUT ────────────────────────────────────────────────────────
-    setStep(1, 'active', 'Searching live jobs...');
-    log('Agent 1 (Scout) — pulling live San Diego job postings...', 'info');
-
-    const searches = [
-      'software engineer San Diego CA',
-      'DevOps engineer San Diego CA',
-      'site reliability engineer San Diego CA',
-      'AI engineer San Diego CA',
-      'machine learning engineer San Diego CA',
-      'solutions engineer San Diego CA',
-      'backend engineer San Diego CA',
-      'platform engineer San Diego CA'
-    ];
-
-    let allJobs = [];
-    for (const q of searches) {
-      log('Searching: ' + q);
+    var searches = ['software engineer San Diego CA','DevOps engineer San Diego CA','site reliability engineer San Diego CA','AI engineer San Diego CA','machine learning engineer San Diego CA','solutions engineer San Diego CA','backend engineer San Diego CA','platform engineer San Diego CA'];
+    var allJobs = [];
+    for (var i=0; i<searches.length; i++) {
+      addLog('Searching: ' + searches[i]);
       try {
-        const jobs = await searchJobs(q);
+        var jobs = await searchJobs(searches[i]);
         allJobs = allJobs.concat(jobs);
-        log('→ ' + jobs.length + ' results', 'ok');
-      } catch(e) {
-        log('Search error: ' + e.message, 'warn');
-      }
-      await new Promise(res => setTimeout(res, 500));
+        addLog('→ ' + jobs.length + ' results', 'ok');
+      } catch(e) { addLog('Search error: ' + e.message, 'warn'); }
+      await new Promise(function(r){ setTimeout(r, 400); });
     }
 
-    const companies = extractCompanies(allJobs);
-    const multiRole = companies.filter(c => c.roles.length >= 2);
-    const singleRole = companies.filter(c => c.roles.length === 1);
-    const finalList = [...multiRole, ...singleRole].slice(0, 20);
+    var companies = extractCompanies(allJobs).slice(0, 20);
+    addLog('Scout complete: ' + companies.length + ' San Diego companies found.', 'ok');
+    setStep(1,'done', companies.length + ' found');
+    if (companies.length === 0) throw new Error('No companies found. The location filter may be too strict — try again.');
 
-    log('Scout complete: ' + finalList.length + ' San Diego companies found (recruiting firms excluded).', 'ok');
-    setStep(1, 'done', finalList.length + ' companies');
+    // AGENT 2: QUALIFIER
+    setStep(2,'active','Scoring...');
+    addLog('Agent 2 (Qualifier) — scoring HOT / WARM / COLD...','info');
 
-    if (finalList.length === 0) {
-      throw new Error('No San Diego companies found. Check your RapidAPI key and try again.');
-    }
-
-    // ── AGENT 2: QUALIFIER ────────────────────────────────────────────────────
-    setStep(2, 'active', 'Qualifying...');
-    log('Agent 2 (Qualifier) — scoring HOT / WARM / COLD...', 'info');
-
-    const batchSize = 4;
-    let allScored = [];
-
-    for (let i = 0; i < finalList.length; i += batchSize) {
-      const batch = finalList.slice(i, i + batchSize);
-      log('Scoring batch ' + (Math.floor(i / batchSize) + 1) + ' of ' + Math.ceil(finalList.length / batchSize) + '...');
-
-      const s2 = `You are a BD analyst for CDM Technology, a boutique IT staffing firm in Carlsbad San Diego with 20+ years experience. CDM places software engineers, DevOps, SREs, cloud engineers, AI/ML engineers, and Sales/Solutions Engineers. CDM works with ANY San Diego company regardless of industry.
-
-Score each company HOT, WARM, or COLD:
-
-HOT (2+ signals met): multiple open roles (2+); hard-to-fill titles (SRE, DevOps, AI/ML Engineer, Staff/Senior Engineer, Solutions Engineer); AI/ML roles present; company appears to be scaling or has urgency
-WARM (1 signal): any AI/ML or Solutions Engineer role; 1 qualifying role with difficulty signal
-COLD: only basic/junior roles; company is a recruiting or staffing firm; very large company with obvious full TA team
-
-Keep ALL text fields under 100 characters each.
-
-Return ONLY a valid JSON array, nothing else, no markdown:
-[{"company_name":"","score":"HOT","score_reasoning":"","key_pain_signal":"","cdm_fit":"","roles_of_interest":[],"has_ai_ml_opportunity":false,"has_sales_engineer_opportunity":false,"pass_to_next_agent":true}]`;
-
+    var allScored = [];
+    var batchSize = 4;
+    for (var b=0; b<companies.length; b+=batchSize) {
+      var batch = companies.slice(b, b+batchSize);
+      addLog('Scoring batch ' + (Math.floor(b/batchSize)+1) + ' of ' + Math.ceil(companies.length/batchSize) + '...');
+      var s2 = 'You are a BD analyst for CDM Technology, a boutique IT staffing firm in Carlsbad San Diego with 20+ years experience. CDM places software engineers, DevOps, SREs, cloud engineers, AI/ML engineers, and Sales/Solutions Engineers. CDM works with ANY San Diego company.\n\nScore each company HOT, WARM, or COLD:\nHOT (2+ signals): multiple open roles; hard-to-fill titles (SRE, DevOps, AI/ML, Staff/Senior, Solutions Engineer); AI/ML roles; company scaling\nWARM (1 signal): any AI/ML or Solutions Eng role; 1-2 roles with difficulty\nCOLD: basic junior roles only; huge enterprise with full TA team\n\nKeep all text fields under 100 chars. Return ONLY valid JSON array:\n[{"company_name":"","score":"HOT","score_reasoning":"","key_pain_signal":"","cdm_fit":"","roles_of_interest":[],"has_ai_ml_opportunity":false,"has_sales_engineer_opportunity":false,"pass_to_next_agent":true}]';
       try {
-        const raw2 = await callClaude(s2, 'Score these companies:\n' + JSON.stringify(batch, null, 1));
-        const scored = parseJSON(raw2);
+        var raw2 = await callClaude(s2, 'Score these:\n' + JSON.stringify(batch, null, 1));
+        var scored = parseJSON(raw2);
         allScored = allScored.concat(scored);
-      } catch(e) {
-        log('Batch scoring issue, skipping: ' + e.message, 'warn');
-      }
+      } catch(e) { addLog('Batch issue: ' + e.message, 'warn'); }
     }
 
-    const hot = allScored.filter(c => c.score === 'HOT' && c.pass_to_next_agent);
-    const warm = allScored.filter(c => c.score === 'WARM' && c.pass_to_next_agent);
-    const cold = allScored.filter(c => c.score === 'COLD');
-    log('Qualifier: ' + hot.length + ' HOT, ' + warm.length + ' WARM, ' + cold.length + ' COLD dropped.', 'ok');
-    setStep(2, 'done', hot.length + ' hot · ' + warm.length + ' warm');
+    var hot = allScored.filter(function(c){ return c.score==='HOT' && c.pass_to_next_agent; });
+    var warm = allScored.filter(function(c){ return c.score==='WARM' && c.pass_to_next_agent; });
+    addLog('Qualifier: ' + hot.length + ' HOT, ' + warm.length + ' WARM, ' + allScored.filter(function(c){return c.score==='COLD';}).length + ' COLD dropped.', 'ok');
+    setStep(2,'done', hot.length + ' hot · ' + warm.length + ' warm');
 
-    const passThrough = allScored.filter(c => c.pass_to_next_agent).slice(0, 12);
+    var passThrough = allScored.filter(function(c){ return c.pass_to_next_agent; }).slice(0,12);
 
-    // ── AGENT 3: RESEARCHER ───────────────────────────────────────────────────
-    setStep(3, 'active', 'Finding decision makers...');
-    log('Agent 3 (Researcher) — finding decision makers (no HR, no TA)...', 'info');
+    // AGENT 3: RESEARCHER
+    setStep(3,'active','Researching...');
+    addLog('Agent 3 (Researcher) — finding decision makers...','info');
 
-    const withContext = passThrough.map(c => {
-      const raw = finalList.find(q => q.company_name === c.company_name);
-      return { ...c, website: raw?.website || '', location: raw?.location || 'San Diego, CA', sample_roles: (raw?.roles || []).slice(0, 3).map(r => r.title) };
+    var withCtx = passThrough.map(function(c) {
+      var raw = companies.find(function(q){ return q.company_name===c.company_name; });
+      return Object.assign({}, c, { website: raw&&raw.website||'', location: raw&&raw.location||'San Diego, CA', sample_roles: (raw&&raw.roles||[]).slice(0,3).map(function(r){return r.title;}) });
     });
 
-    let allContacts = [];
-    for (let i = 0; i < withContext.length; i += 3) {
-      const batch = withContext.slice(i, i + 3);
-      const s3 = `You are a sales intelligence researcher for CDM Technology, Carlsbad San Diego. Find the right decision maker at each company — the engineering leader who feels the pain of unfilled roles every day.
-
-NEVER return anyone in: HR, Human Resources, Talent Acquisition, Recruiting, People Operations, People Partner.
-TARGET (in priority order): CTO, VP Engineering, Director of Engineering, VP of AI (for ML roles), VP Sales/CRO (for Sales Eng roles only), Engineering Manager (small companies), Founder/CEO (under 200 employees), COO/CFO (very small companies).
-
-Generate realistic, plausible San Diego professional profiles. Use real-sounding full names and realistic email patterns.
-
-Return ONLY a valid JSON array, nothing else:
-[{"company_name":"","contact_name":"","contact_title":"","contact_linkedin_url":"https://linkedin.com/in/firstname-lastname","contact_email":"","contact_email_confidence":"likely","years_at_company":"2-3 years","recent_linkedin_activity":"","outreach_angle":""}]`;
-
+    var allContacts = [];
+    for (var r=0; r<withCtx.length; r+=3) {
+      var rbatch = withCtx.slice(r, r+3);
+      var s3 = 'You are a sales intelligence researcher for CDM Technology, Carlsbad San Diego. Find the right decision maker — NEVER HR, TA, or Recruiting.\n\nTARGET: CTO, VP Engineering, Director Engineering, VP AI (ML roles), VP Sales/CRO (Sales Eng roles), Founder/CEO (small cos).\n\nReturn ONLY valid JSON array:\n[{"company_name":"","contact_name":"","contact_title":"","contact_linkedin_url":"https://linkedin.com/in/","contact_email":"","contact_email_confidence":"likely","years_at_company":"","recent_linkedin_activity":"","outreach_angle":""}]';
       try {
-        const raw3 = await callClaude(s3, 'Find decision makers at:\n' + JSON.stringify(batch, null, 1));
-        const contacts = parseJSON(raw3);
+        var raw3 = await callClaude(s3, 'Find decision makers at:\n' + JSON.stringify(rbatch, null, 1));
+        var contacts = parseJSON(raw3);
         allContacts = allContacts.concat(contacts);
-      } catch(e) {
-        log('Researcher batch issue: ' + e.message, 'warn');
-      }
+      } catch(e) { addLog('Researcher issue: ' + e.message, 'warn'); }
     }
+    addLog('Researcher found ' + allContacts.length + ' decision makers.', 'ok');
+    setStep(3,'done', allContacts.length + ' contacts');
 
-    log('Researcher found ' + allContacts.length + ' decision makers.', 'ok');
-    setStep(3, 'done', allContacts.length + ' contacts');
+    // AGENT 4: REPORT
+    setStep(4,'active','Writing report...');
+    addLog('Agent 4 (Report Builder) — composing your lead report...','info');
 
-    // ── AGENT 4: REPORT BUILDER ───────────────────────────────────────────────
-    setStep(4, 'active', 'Writing report...');
-    log('Agent 4 (Report Builder) — composing your lead report...', 'info');
+    var today = new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    var s4 = 'You are writing a biweekly lead intelligence report for Chip and Devlin at CDM Technology, a boutique IT recruiting firm in Carlsbad San Diego with 20+ years of local relationships. CDM places software engineers, DevOps, SREs, AI/ML engineers, and Sales Engineers.\n\nWrite clean HTML with inline styles. Dark theme (bg already #0d0d0f). No html/body tags.\n\nSTRUCTURE:\n1. Intro (background:#1c1c1f;border-radius:8px;padding:14px 16px;margin-bottom:20px;font-size:13px;color:#888;border-left:3px solid #2a2a2f): date, counts, one pattern\n2. AI/ML SPOTLIGHT section if any (title color:#3dd9b3)\n3. SALES ENG SPOTLIGHT if any (title color:#a78bfa)\n4. HOT LEADS (title color:#ff5c3a)\n5. WARM LEADS (title color:#ffaa2e)\n\nEACH LEAD CARD (padding:16px 18px;border-radius:8px;margin-bottom:14px;border-left:3px solid [color];background:rgba([r],[g],[b],0.07)):\n- Company name (font-size:16px;font-weight:700;color:#e8e8ec)\n- Score badge\n- Open roles, pain signal, CDM fit (font-size:13px;color:#888)\n- Decision maker details\n- Devlin Sales Nav action (background:rgba(200,240,74,0.06);border:1px solid rgba(200,240,74,0.18);border-radius:6px;padding:8px 12px;color:#a0b840;font-size:12px)\n- Outreach draft (background:#1a1a2e;border:1px solid #2a2a3f;border-radius:6px;padding:12px;font-size:13px;color:#8888aa;font-style:italic) — max 100 words, written as Chip, opens with specific observation, NEVER "I hope this finds you well" or "I wanted to reach out", closes with "Worth a quick call?" or "Happy to send profiles first"\n\nReturn ONLY the HTML. No markdown.';
 
-    const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    var raw4 = await callClaude(s4, 'Write CDM Intelligence Report for ' + today + '.\n\nData:\n' + JSON.stringify({hot:hot,warm:warm,contacts:allContacts,companies:withCtx}, null, 1));
 
-    const s4 = `You are writing a biweekly lead intelligence report for Chip and Devlin at CDM Technology, a boutique IT recruiting firm in Carlsbad San Diego with 20+ years of local relationships. CDM places software engineers, DevOps, SREs, AI/ML engineers (high demand right now), and Sales/Solutions Engineers.
+    setStep(4,'done','Complete ✓');
+    addLog('Report complete! ' + hot.length + ' hot, ' + warm.length + ' warm leads.', 'ok');
 
-These are REAL companies from live job board data pulled today. Write based on actual data provided.
-
-Write clean HTML with inline styles only. The page background is already #0d0d0f (dark). Do not add html/body/head tags.
-
-STRUCTURE:
-1. Intro div (background:#1c1c1f, border-radius:8px, padding:14px 16px, margin-bottom:20px, font-size:13px, color:#888, border-left:3px solid #2a2a2f): 2 sentences — date, lead counts, one pattern observed
-2. If AI/ML leads exist: section title div (font-size:10px, font-weight:700, letter-spacing:0.14em, text-transform:uppercase, color:#3dd9b3, border-bottom:1px solid rgba(61,217,179,0.15), padding-bottom:8px, margin:24px 0 14px) = "AI / ML Engineer Spotlight"
-3. If Sales Eng leads: section title same style, color:#a78bfa, border rgba(167,139,250,0.15) = "Sales Engineer Spotlight"
-4. Section title color:#ff5c3a, border rgba(255,92,58,0.15) = "Hot Leads"
-5. Section title color:#ffaa2e, border rgba(255,170,46,0.15) = "Warm Leads"
-
-EACH LEAD CARD:
-div style="padding:16px 18px; border-radius:8px; margin-bottom:14px; border-left:3px solid [color]; background:rgba([r],[g],[b],0.07)"
-- HOT: border-color #ff5c3a, bg rgba(255,92,58,0.07)
-- WARM: border-color #ffaa2e, bg rgba(255,170,46,0.07)  
-- AI/ML: border-color #3dd9b3, bg rgba(61,217,179,0.07)
-- Sales: border-color #a78bfa, bg rgba(167,139,250,0.07)
-
-Inside each card:
-- p style="font-size:16px;font-weight:700;color:#e8e8ec;margin-bottom:4px" — Company name
-- span style="font-size:10px;font-weight:700;font-family:monospace;padding:2px 8px;border-radius:4px;display:inline-block;margin-bottom:10px;background:rgba(255,92,58,0.15);color:#ff5c3a" — score badge (adjust colors by score)
-- p style="font-size:13px;color:#888;margin-bottom:5px" with strong style="color:#ccc;font-weight:600" labels for: Open Roles, Pain Signal, CDM Fit
-- hr style="border:none;border-top:1px dashed #2a2a2f;margin:10px 0"
-- Decision maker: Name · Title · LinkedIn URL · Email
-- div style="background:rgba(200,240,74,0.06);border:1px solid rgba(200,240,74,0.18);border-radius:6px;padding:8px 12px;margin:8px 0;font-size:12px;color:#a0b840" — Devlin's Sales Nav action (specific: "Check mutual connections with [name]" or "Send InMail to [name] re: [specific role]")
-- div style="background:#1a1a2e;border:1px solid #2a2a3f;border-radius:6px;padding:12px 14px;margin-top:10px;font-size:13px;color:#8888aa;font-style:italic;line-height:1.7" — outreach draft with span style="font-style:normal;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:6px" label "Ready-to-send draft:"
-
-OUTREACH DRAFT RULES (critical):
-- Max 100 words
-- Written as Chip, first person
-- Opens with specific observation about their actual open roles from the data
-- NEVER: "I hope this email finds you well" / "I wanted to reach out" / "My name is" / "I came across your posting"
-- References CDM's 20 years in San Diego naturally when it fits
-- Closes with: "Worth a quick call?" or "Happy to send profiles first if that's more useful."
-
-Return ONLY the HTML fragment. No markdown. No preamble. No html/body tags.`;
-
-    const reportInput = {
-      date: today,
-      hot_count: hot.length,
-      warm_count: warm.length,
-      hot_leads: hot,
-      warm_leads: warm,
-      contacts: allContacts,
-      live_company_data: withContext
-    };
-
-    const raw4 = await callClaude(s4, 'Write the CDM Intelligence Report.\n\nData:\n' + JSON.stringify(reportInput, null, 1));
-
-    setStep(4, 'done', 'Complete ✓');
-    log('Report complete! ' + hot.length + ' hot leads, ' + warm.length + ' warm leads from live job data.', 'ok');
-
-    const ts = new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+    var ts = new Date().toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
     document.getElementById('report-meta').textContent = 'Generated ' + ts + ' · LIVE DATA · ' + hot.length + ' hot · ' + warm.length + ' warm';
     document.getElementById('report-body').innerHTML = raw4;
 
   } catch(e) {
-    log('ERROR: ' + e.message, 'err');
-    [1,2,3,4].forEach(n => {
-      if (document.getElementById('p'+n).className.includes('active')) setStep(n, 'err', 'Error');
+    addLog('ERROR: ' + e.message, 'err');
+    [1,2,3,4].forEach(function(n){
+      if (document.getElementById('p'+n).className.includes('active')) setStep(n,'err','Error');
     });
   } finally {
     running = false;
@@ -500,41 +316,21 @@ Return ONLY the HTML fragment. No markdown. No preamble. No html/body tags.`;
 }
 
 function copyReport() {
-  const text = document.getElementById('report-body').innerText;
-  navigator.clipboard.writeText(text).then(() => {
-    const b = document.querySelector('.copy-btn');
-    const orig = b.textContent;
-    b.textContent = 'Copied!';
-    b.style.color = '#3dd9b3';
-    setTimeout(() => { b.textContent = orig; b.style.color = ''; }, 2000);
-  }).catch(() => {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
+  var text = document.getElementById('report-body').innerText;
+  navigator.clipboard.writeText(text).then(function(){
+    var b = event.target; b.textContent='Copied!'; b.style.color='#3dd9b3';
+    setTimeout(function(){ b.textContent='Copy report'; b.style.color=''; }, 2000);
   });
+}
+
+function emailReport() {
+  var text = document.getElementById('report-body').innerText;
+  var date = new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  var subject = encodeURIComponent('CDM Intelligence Report — ' + date);
+  var body = encodeURIComponent('Chip & Devlin,\n\nHere is your latest CDM Intelligence Report.\n\n' + text + '\n\n—\nGenerated by CDM Intelligence Agent\ncdm-leads.vercel.app');
+  var to = 'chip@cdmtechnology.com,devlin@cdmtechnology.com';
+  window.open('mailto:' + to + '?subject=' + subject + '&body=' + body);
 }
 </script>
 </body>
 </html>
-<script>
-function emailReport() {
-  const reportText = document.getElementById('report-body').innerText;
-  const meta = document.getElementById('report-meta').textContent;
-  const date = new Date().toLocaleDateString('en-US', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  const subject = encodeURIComponent('CDM Intelligence Report — ' + date);
-  const body = encodeURIComponent(
-    'Chip & Devlin,\n\nHere is your latest CDM Intelligence Report.\n\n' +
-    '─────────────────────────────────\n' +
-    meta + '\n' +
-    '─────────────────────────────────\n\n' +
-    reportText +
-    '\n\n─────────────────────────────────\n' +
-    'Generated by CDM Intelligence Agent · cdm-leads.vercel.app'
-  );
-  const to = encodeURIComponent('chip@cdmtechnology.com,devlin@cdmtechnology.com');
-  window.open('mailto:' + to + '?subject=' + subject + '&body=' + body);
-}
-</script>
